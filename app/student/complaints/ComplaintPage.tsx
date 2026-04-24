@@ -1,0 +1,369 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import "../styles/complaints.css";
+import { 
+  ShieldAlert, 
+  MessageSquarePlus, 
+  CheckCircle2, 
+  Clock, 
+  History, 
+  UserSquare2, 
+  X, 
+  Plus,
+  Send,
+  MessageCircle,
+  HelpCircle,
+  ChevronRight
+} from "lucide-react";
+
+type ComplaintStatus = "open" | "resolved" | "escalated";
+
+interface Complaint {
+  _id: string;
+  text: string;
+  category: string;
+  isAnonymous: boolean;
+  status: ComplaintStatus;
+  response: string | null;
+  createdAt: string;
+}
+
+function timeAgo(dateStr: string): string {
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return "Just now";
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  return `${Math.floor(hrs / 24)}d ago`;
+}
+
+const CATEGORIES = [
+  { id: "hostel", label: "Hostel & Facilities", icon: "🛏️", color: "#6366f1" },
+  { id: "academic", label: "Academic Pressure", icon: "📚", color: "#f59e0b" },
+  { id: "peer", label: "Peer Conflict", icon: "🤝", color: "#ec4899" },
+  { id: "safety", label: "Safety/Personal", icon: "⚠️", color: "#ef4444" },
+  { id: "other", label: "Other/Something Else", icon: "❓", color: "#64748b" }
+];
+
+const STATUS_CONFIG: Record<ComplaintStatus, { label: string; icon: any; class: string }> = {
+  open: { label: "Received", icon: Clock, class: "rc-status--open" },
+  resolved: { label: "Resolved", icon: CheckCircle2, class: "rc-status--resolved" },
+  escalated: { label: "In Review", icon: ShieldAlert, class: "rc-status--escalated" },
+};
+
+export default function ComplaintsPage() {
+  const [complaints, setComplaints] = useState<Complaint[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [showForm, setShowForm] = useState(false);
+  const [activeTab, setActiveTab] = useState<"all" | "open" | "resolved">("all");
+  
+  // Form State
+  const [text, setText] = useState("");
+  const [category, setCategory] = useState(CATEGORIES[4].label);
+  const [isAnonymous, setIsAnonymous] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+
+  useEffect(() => {
+    fetchComplaints();
+  }, []);
+
+  const token = typeof window !== "undefined" ? localStorage.getItem("accessToken") : null;
+  const authId = typeof window !== "undefined" ? localStorage.getItem("auth_id") : null;
+
+  async function fetchComplaints() {
+    try {
+      const res = await fetch(`/api/student/complaints/${authId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (!res.ok) throw new Error();
+      const data = await res.json();
+      setComplaints(data.complaints || []);
+    } catch {
+      setError("Unable to load history. Please refresh.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleSubmit() {
+    if (!text.trim()) return;
+    setSubmitting(true);
+    try {
+      const res = await fetch(`/api/student/complaints/${authId}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ text: text.trim(), category, isAnonymous }),
+      });
+      if (!res.ok) throw new Error();
+      const data = await res.json();
+      setComplaints(prev => [data.complaint, ...prev]);
+      resetForm();
+      setSubmitted(true);
+      setTimeout(() => setSubmitted(false), 5000);
+    } catch {
+      setError("Failed to send concern. Check your connection.");
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  const resetForm = () => {
+    setText("");
+    setIsAnonymous(false);
+    setCategory(CATEGORIES[4].label);
+    setShowForm(false);
+  };
+
+  const filteredComplaints = complaints.filter(c => {
+    if (activeTab === "all") return true;
+    if (activeTab === "open") return c.status === "open" || c.status === "escalated";
+    return c.status === "resolved";
+  });
+
+  return (
+    <main className="rc-page">
+      {/* ── HEADER ── */}
+      <header className="rc-header">
+        <div className="rc-header-content">
+          <p className="rc-eyebrow">Safe Haven / Support</p>
+          <h1 className="rc-title">Raise a Concern 🌿</h1>
+          <p className="rc-subtitle">
+            You deserve to feel safe and heard. What is on your mind today?
+          </p>
+        </div>
+        {!showForm && (
+          <button className="rc-raise-btn" onClick={() => setShowForm(true)}>
+            <Plus size={20} />
+            Write a New Concern
+          </button>
+        )}
+      </header>
+
+      {/* ── ALERTS ── */}
+      {submitted && (
+        <div className="rc-banner rc-banner--success">
+          <div className="rc-banner-inner">
+            <CheckCircle2 size={18} />
+            <span>Thank you for sharing. We've received your concern and will review it soon.</span>
+          </div>
+          <button onClick={() => setSubmitted(false)} className="rc-banner-close"><X size={16} /></button>
+        </div>
+      )}
+
+      {error && (
+        <div className="rc-banner rc-banner--error" onClick={() => setError(null)}>
+          <div className="rc-banner-inner">
+            <ShieldAlert size={18} />
+            <span>{error}</span>
+          </div>
+          <X size={16} />
+        </div>
+      )}
+
+      {/* ── MAIN CONTENT ── */}
+      <div className="rc-grid">
+        {/* Left Column: Form / Info */}
+        <section className="rc-column-main">
+          {showForm ? (
+            <div className="rc-form-container">
+              <div className="rc-form-header">
+                <button className="rc-back-btn" onClick={resetForm}>
+                  ← Back to My History
+                </button>
+                <div className="rc-form-intro">
+                  <MessageCircle size={28} className="rc-form-icon" />
+                  <div>
+                    <h2 className="rc-form-title">Tell us what's happening</h2>
+                    <p className="rc-form-sub">Your words help us create a safer community.</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Step 1: Category */}
+              <div className="rc-form-section">
+                <label className="rc-section-label">What is this regarding?</label>
+                <div className="rc-category-grid">
+                  {CATEGORIES.map(cat => (
+                    <button
+                      key={cat.id}
+                      className={`rc-cat-item ${category === cat.label ? 'rc-cat-item--active' : ''}`}
+                      onClick={() => setCategory(cat.label)}
+                    >
+                      <span className="rc-cat-icon">{cat.icon}</span>
+                      <span className="rc-cat-label">{cat.label}</span>
+                      {category === cat.label && <div className="rc-cat-check"><CheckCircle2 size={12} /></div>}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Step 2: Message */}
+              <div className="rc-form-section">
+                <label className="rc-section-label">Your message</label>
+                <div className="rc-textarea-wrapper">
+                  <textarea
+                    className="rc-textarea"
+                    placeholder="Provide as much detail as you're comfortable sharing..."
+                    value={text}
+                    onChange={e => setText(e.target.value)}
+                    rows={6}
+                    maxLength={1000}
+                  />
+                  <div className="rc-textarea-footer">
+                    <span>{text.length} / 1000 characters</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Step 3: Anonymous Toggle */}
+              <div className="rc-anon-control">
+                <div className="rc-anon-info">
+                  <UserSquare2 size={24} className="rc-anon-pic" />
+                  <div>
+                    <p className="rc-anon-head">Submit Anonymously?</p>
+                    <p className="rc-anon-desc">Your identity will be hidden from the Warden.</p>
+                  </div>
+                </div>
+                <label className="rc-switch">
+                  <input
+                    type="checkbox"
+                    checked={isAnonymous}
+                    onChange={e => setIsAnonymous(e.target.checked)}
+                  />
+                  <span className="rc-switch-slider" />
+                </label>
+              </div>
+
+              {/* Actions */}
+              <div className="rc-form-footer">
+                <button className="rc-btn-cancel" onClick={resetForm}>Discard</button>
+                <button 
+                  className="rc-btn-submit" 
+                  disabled={submitting || !text.trim()} 
+                  onClick={handleSubmit}
+                >
+                  {submitting ? "Sending..." : "Send Secure Alert"}
+                  {!submitting && <Send size={16} />}
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="rc-history">
+              <div className="rc-history-header">
+                <div className="rc-history-title-group">
+                  <History size={20} className="rc-history-icon" />
+                  <h2 className="rc-history-title">Concern History</h2>
+                </div>
+                <div className="rc-tabs">
+                  <button 
+                    className={`rc-tab ${activeTab === "all" ? "rc-tab--active" : ""}`}
+                    onClick={() => setActiveTab("all")}
+                  >
+                    All
+                  </button>
+                  <button 
+                    className={`rc-tab ${activeTab === "open" ? "rc-tab--active" : ""}`}
+                    onClick={() => setActiveTab("open")}
+                  >
+                    Active
+                  </button>
+                  <button 
+                    className={`rc-tab ${activeTab === "resolved" ? "rc-tab--active" : ""}`}
+                    onClick={() => setActiveTab("resolved")}
+                  >
+                    Resolved
+                  </button>
+                </div>
+              </div>
+
+              {loading ? (
+                <div className="rc-loader">
+                  <div className="rc-loader-ring"></div>
+                  <p>Gathering your records...</p>
+                </div>
+              ) : filteredComplaints.length === 0 ? (
+                <div className="rc-empty-state">
+                  <div className="rc-empty-graphic">🕊️</div>
+                  <h3>No concerns found</h3>
+                  <p>Your history is empty. We're here whenever you need a safe space.</p>
+                </div>
+              ) : (
+                <div className="rc-list">
+                  {filteredComplaints.map(c => {
+                    const config = STATUS_CONFIG[c.status];
+                    const Icon = config.icon;
+                    return (
+                      <div key={c._id} className={`rc-card rc-card--${c.status}`}>
+                        <div className="rc-card-header">
+                          <div className="rc-card-badges">
+                            <span className={`rc-pill-status ${config.class}`}>
+                              <Icon size={12} />
+                              {config.label}
+                            </span>
+                            <span className="rc-pill-cat">{c.category || "General"}</span>
+                            {c.isAnonymous && <span className="rc-pill-anon">🔒 Anonymous</span>}
+                          </div>
+                          <span className="rc-card-date">{timeAgo(c.createdAt)}</span>
+                        </div>
+                        <p className="rc-card-body">{c.text}</p>
+                        
+                        {c.response && (
+                          <div className="rc-mentor-response">
+                            <div className="rc-mentor-head">
+                              <MessageSquarePlus size={14} />
+                              <span>Mentor Feedback</span>
+                            </div>
+                            <p className="rc-mentor-body">{c.response}</p>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          )}
+        </section>
+
+        {/* Right Column: Support / Guidance */}
+        <aside className="rc-column-sidebar">
+          <div className="rc-sidebar-card rc-sidebar-card--primary">
+            <HelpCircle size={24} className="rc-sidebar-icon" />
+            <h3 className="rc-sidebar-title">How it works</h3>
+            <ul className="rc-sidebar-list">
+              <li>
+                <div className="rc-list-point">1</div>
+                <p>Your message is encrypted and sent directly to the BWF Warden.</p>
+              </li>
+              <li>
+                <div className="rc-list-point">2</div>
+                <p>The Warden will review and assign your concern to a mentor.</p>
+              </li>
+              <li>
+                <div className="rc-list-point">3</div>
+                <p>You'll receive feedback and updates directly in this dashboard.</p>
+              </li>
+            </ul>
+          </div>
+
+          <div className="rc-sidebar-card rc-sidebar-card--purple" onClick={() => window.location.href = '/student/wellbeing'}>
+            <div className="rc-sidebar-badge">BWF Support</div>
+            <h3 className="rc-sidebar-title">Need to talk now?</h3>
+            <p className="rc-sidebar-desc">Our team is available 24/7 for emotional and mental health support.</p>
+            <div className="rc-sidebar-link">
+              <span>Go to Wellbeing Hub</span>
+              <ChevronRight size={16} />
+            </div>
+          </div>
+        </aside>
+      </div>
+    </main>
+  );
+}

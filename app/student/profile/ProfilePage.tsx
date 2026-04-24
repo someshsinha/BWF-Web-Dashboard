@@ -1,241 +1,189 @@
 "use client";
-
+// app/student/profile/ProfilePage.tsx
 import { useState } from "react";
-import { Edit2, Save, User } from "lucide-react";
-import Head from "next/head";
+import "../styles/profile.css";
+import { Edit2, Save, Star, BookOpen, Sparkles } from "lucide-react";
+import { useProfile } from "../context/ProfileContext";
+import { AVATARS, AVATAR_CATEGORIES, getAvatar } from "../constants/avatars";
+import DiaryEntry from "../components/DiaryEntry";
 
-interface StudentProfile {
-  name: string;
-  age: number;
-  dob: string;
-  email: string;
-  phone: string;
-  address: string;
-  guardianName: string;
-  guardianContact: string;
-  classInfo: string;
-  interests: string[];
-  role: string;
+const INTEREST_EMOJIS: Record<string,string> = {
+  Drawing:"🎨", Science:"🔬", Music:"🎵", Reading:"📚",
+  Sports:"⚽", Cooking:"🍳", Dancing:"💃", Writing:"✍️",
+  Nature:"🌿", Crafts:"✂️", Singing:"🎤", Gardening:"🌱",
+};
+
+interface Profile {
+  name:string; dob:string; classInfo:string; interests:string[];
+  bio:string;
 }
 
 export default function ProfilePage() {
-  const [editing, setEditing] = useState(false);
+  const { avatarId, setAvatarId, setName: setCtxName } = useProfile();
+  const av = getAvatar(avatarId);
 
-  const [profile, setProfile] = useState<StudentProfile>({
-    name: "Aisha Sharma",
-    age: 16,
-    dob: "2010-05-14",
-    email: "aisha.sharma@example.com",
-    phone: "+91 9876543210",
-    address: "123 Green Street, Delhi, India",
-    guardianName: "Ms. Sharma",
-    guardianContact: "+91 9123456780",
-    classInfo: "10th Grade",
-    interests: ["Drawing", "Science", "Music"],
-    role: "Student",
+  const [editing, setEditing]       = useState(false);
+  const [saved, setSaved]           = useState(false);
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const [activeCategory, setActiveCat] = useState<string>("Animals");
+  const [tagInput, setTagInput]     = useState("");
+
+  const [profile, setProfile] = useState<Profile>({
+    name:"Aisha Sharma", dob:"2010-05-14",
+    classInfo:"10th Grade", interests:["Drawing","Science","Music"],
+    bio:"I love learning new things and believe every day is a chance to grow. 🌸",
   });
 
-  const toggleEdit = () => setEditing(!editing);
+  const set = (k:keyof Profile, v:any) => setProfile(p=>({...p,[k]:v}));
 
-  const handleChange = (field: keyof StudentProfile, value: any) => {
-    setProfile({ ...profile, [field]: value });
+  const handleSave = () => {
+    setCtxName(profile.name);   // sync name to context
+    setSaved(true); setEditing(false); setPickerOpen(false);
+    setTimeout(()=>setSaved(false), 2800);
   };
 
+  const addTag = () => {
+    const v = tagInput.trim();
+    if (v && !profile.interests.includes(v)) { set("interests",[...profile.interests,v]); setTagInput(""); }
+  };
+
+  const catAvatars = AVATARS.filter(a => a.category === activeCategory);
+
   return (
-    <>
-      {/* Head for SEO & page title */}
-      <Head>
-        <title>{profile.name} - Profile</title>
-        <meta
-          name="description"
-          content="View and edit your personal information, contact details, and interests."
-        />
-      </Head>
+    <div className="prof-page">
 
-      <div className="space-y-6">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div className="flex items-center gap-4">
-            <div className="w-16 h-16 rounded-full bg-gray-200 flex items-center justify-center">
-              <User size={28} className="text-gray-500" />
-            </div>
-            <div>
-              <h1 className="text-xl sm:text-2xl font-semibold text-gray-900">
-                {profile.name}
-              </h1>
-              <p className="text-sm text-gray-500">{profile.role}</p>
-            </div>
-          </div>
-
+      {/* HEADER */}
+      <header className="prof-header">
+        <div>
+          <p className="prof-eyebrow">My Account</p>
+          <h1 className="prof-title">My Profile</h1>
+        </div>
+        <div className="prof-header-right">
+          {saved && <div className="prof-toast"><Sparkles size={13}/> Saved! ✨</div>}
           <button
-            onClick={toggleEdit}
-            className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700 transition"
+            className={`prof-edit-btn${editing?" prof-edit-btn--save":""}`}
+            onClick={()=>editing?handleSave():setEditing(true)}
           >
-            {editing ? <Save size={16} /> : <Edit2 size={16} />}
-            {editing ? "Save" : "Edit Profile"}
+            {editing?<><Save size={15}/>Save Profile</>:<><Edit2 size={15}/>Edit Profile</>}
           </button>
         </div>
+      </header>
 
-        {/* Personal Info Card */}
-        <div className="bg-white border border-gray-200 rounded-xl p-6 space-y-4 shadow-sm">
-          <h2 className="text-lg font-semibold text-gray-900">
-            Personal Information
-          </h2>
+      {/* HERO */}
+      <section className="prof-hero">
+        <div className="prof-blob b1"/><div className="prof-blob b2"/><div className="prof-blob b3"/>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-gray-500 text-sm">Full Name</label>
-              <input
-                type="text"
-                disabled={!editing}
-                value={profile.name}
-                onChange={(e) => handleChange("name", e.target.value)}
-                className={`mt-1 w-full rounded-lg border px-3 py-2 text-gray-900 ${
-                  editing ? "border-gray-300" : "border-transparent bg-gray-100"
-                }`}
-              />
-            </div>
-
-            <div>
-              <label className="block text-gray-500 text-sm">Age</label>
-              <input
-                type="number"
-                disabled
-                value={profile.age}
-                className="mt-1 w-full rounded-lg border border-gray-200 bg-gray-100 px-3 py-2 text-gray-500 cursor-not-allowed"
-              />
-            </div>
-
-            <div>
-              <label className="block text-gray-500 text-sm">
-                Date of Birth
-              </label>
-              <input
-                type="date"
-                disabled
-                value={profile.dob}
-                className="mt-1 w-full rounded-lg border border-gray-200 bg-gray-100 px-3 py-2 text-gray-500 cursor-not-allowed"
-              />
-            </div>
-
-            <div>
-              <label className="block text-gray-500 text-sm">Email</label>
-              <input
-                type="email"
-                disabled={!editing}
-                value={profile.email}
-                onChange={(e) => handleChange("email", e.target.value)}
-                className={`mt-1 w-full rounded-lg border px-3 py-2 text-gray-900 ${
-                  editing ? "border-gray-300" : "border-transparent bg-gray-100"
-                }`}
-              />
-            </div>
-
-            <div>
-              <label className="block text-gray-500 text-sm">Phone</label>
-              <input
-                type="tel"
-                disabled={!editing}
-                value={profile.phone}
-                onChange={(e) => handleChange("phone", e.target.value)}
-                className={`mt-1 w-full rounded-lg border px-3 py-2 text-gray-900 ${
-                  editing ? "border-gray-300" : "border-transparent bg-gray-100"
-                }`}
-              />
-            </div>
-
-            <div>
-              <label className="block text-gray-500 text-sm">Class</label>
-              <input
-                type="text"
-                disabled
-                value={profile.classInfo}
-                className="mt-1 w-full rounded-lg border border-gray-200 bg-gray-100 px-3 py-2 text-gray-500 cursor-not-allowed"
-              />
-            </div>
-
-            <div className="sm:col-span-2">
-              <label className="block text-gray-500 text-sm">Address</label>
-              <input
-                type="text"
-                disabled={!editing}
-                value={profile.address}
-                onChange={(e) => handleChange("address", e.target.value)}
-                className={`mt-1 w-full rounded-lg border px-3 py-2 text-gray-900 ${
-                  editing ? "border-gray-300" : "border-transparent bg-gray-100"
-                }`}
-              />
-            </div>
-
-            <div>
-              <label className="block text-gray-500 text-sm">
-                Guardian Name
-              </label>
-              <input
-                type="text"
-                disabled={!editing}
-                value={profile.guardianName}
-                onChange={(e) => handleChange("guardianName", e.target.value)}
-                className={`mt-1 w-full rounded-lg border px-3 py-2 text-gray-900 ${
-                  editing ? "border-gray-300" : "border-transparent bg-gray-100"
-                }`}
-              />
-            </div>
-
-            <div>
-              <label className="block text-gray-500 text-sm">
-                Guardian Contact
-              </label>
-              <input
-                type="tel"
-                disabled={!editing}
-                value={profile.guardianContact}
-                onChange={(e) =>
-                  handleChange("guardianContact", e.target.value)
-                }
-                className={`mt-1 w-full rounded-lg border px-3 py-2 text-gray-900 ${
-                  editing ? "border-gray-300" : "border-transparent bg-gray-100"
-                }`}
-              />
-            </div>
-
-            <div className="sm:col-span-2">
-              <label className="block text-gray-500 text-sm">
-                Interests / Hobbies
-              </label>
-              <input
-                type="text"
-                disabled={!editing}
-                value={profile.interests.join(", ")}
-                onChange={(e) =>
-                  handleChange(
-                    "interests",
-                    e.target.value.split(",").map((i) => i.trim()),
-                  )
-                }
-                className={`mt-1 w-full rounded-lg border px-3 py-2 text-gray-900 ${
-                  editing ? "border-gray-300" : "border-transparent bg-gray-100"
-                }`}
-              />
-            </div>
-          </div>
+        {/* Avatar */}
+        <div className="prof-av-col">
+          <button
+            className="prof-av"
+            style={{background:av.bg}}
+            onClick={()=>editing&&setPickerOpen(o=>!o)}
+            title={editing?"Tap to change avatar":av.label}
+          >
+            <span className="prof-av-emoji">{av.emoji}</span>
+            {editing&&<span className="prof-av-overlay">🎨</span>}
+          </button>
+          <span className="prof-av-name">{av.label}</span>
         </div>
 
-        {/* Optional Security / Account Section */}
-        <div className="bg-white border border-gray-200 rounded-xl p-6 space-y-4 shadow-sm">
-          <h2 className="text-lg font-semibold text-gray-900">
-            Account & Security
-          </h2>
-          <div className="space-y-2">
-            <button className="w-full flex items-center justify-center gap-2 px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-50 transition text-sm">
-              Change Password
-            </button>
-            <button className="w-full flex items-center justify-center gap-2 px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-50 transition text-sm">
-              Update Profile Picture
-            </button>
+        {/* Info */}
+        <div className="prof-hero-info">
+          {editing
+            ?<input className="prof-name-input" value={profile.name} onChange={e=>set("name",e.target.value)}/>
+            :<h2 className="prof-hero-name">{profile.name}</h2>}
+
+          <div className="prof-badges">
+            <span className="prof-badge prof-badge--b"><Star size={11} fill="currentColor"/>Student</span>
+            <span className="prof-badge prof-badge--t"><BookOpen size={11}/>{profile.classInfo}</span>
+          </div>
+
+          {editing
+            ?<input className="prof-bio-input" value={profile.bio} onChange={e=>set("bio",e.target.value)} placeholder="Something about yourself…"/>
+            :<p className="prof-hero-bio">{profile.bio}</p>}
+
+          <div className="prof-tags">
+            {profile.interests.map(t=>(
+              <span key={t} className="prof-tag">
+                {INTEREST_EMOJIS[t]||"🌟"} {t}
+                {editing&&<button className="prof-tag-rm" onClick={()=>set("interests",profile.interests.filter(x=>x!==t))}>×</button>}
+              </span>
+            ))}
+            {editing&&(
+              <input
+                className="prof-tag-add"
+                placeholder="+ Add…"
+                value={tagInput}
+                onChange={e=>setTagInput(e.target.value)}
+                onKeyDown={e=>{if(e.key==="Enter")addTag();}}
+              />
+            )}
           </div>
         </div>
+      </section>
+
+      {/* AVATAR PICKER */}
+      {pickerOpen&&editing&&(
+        <section className="prof-picker">
+          <div className="prof-picker-top">
+            <div>
+              <h3 className="prof-picker-title">Choose your avatar ✨</h3>
+              <p className="prof-picker-sub">Pick something that feels like you!</p>
+            </div>
+            <button className="prof-picker-close" onClick={()=>setPickerOpen(false)}>✕</button>
+          </div>
+
+          {/* Category tabs */}
+          <div className="prof-picker-tabs">
+            {AVATAR_CATEGORIES.map(cat=>(
+              <button
+                key={cat}
+                className={`prof-picker-tab${activeCategory===cat?" active":""}`}
+                onClick={()=>setActiveCat(cat)}
+              >{cat}</button>
+            ))}
+          </div>
+
+          {/* Avatar grid */}
+          <div className="prof-picker-grid">
+            {catAvatars.map(a=>(
+              <button
+                key={a.id}
+                className={`prof-picker-item${avatarId===a.id?" selected":""}`}
+                style={{background:a.bg}}
+                onClick={()=>{setAvatarId(a.id);setPickerOpen(false);}}
+                title={a.label}
+              >
+                <span className="picker-emoji">{a.emoji}</span>
+                <span className="picker-label">{a.label}</span>
+              </button>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* STATS */}
+      <div className="prof-stats">
+        {[
+          {emoji:"🏫",label:"Class",    value:profile.classInfo},
+          {emoji:"🎯",label:"Interests",value:`${profile.interests.length} things I love`},
+        ].map((s,i)=>(
+          <div key={i} className="prof-stat">
+            <span className="prof-stat-emoji">{s.emoji}</span>
+            <div>
+              <p className="prof-stat-label">{s.label}</p>
+              <p className="prof-stat-val">{s.value}</p>
+            </div>
+          </div>
+        ))}
       </div>
-    </>
+
+      {/* GRID */}
+      <div className="prof-grid">
+
+        <DiaryEntry studentName={profile.name} dob={profile.dob} />
+
+      </div>
+    </div>
   );
 }
