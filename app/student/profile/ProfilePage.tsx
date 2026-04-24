@@ -123,9 +123,9 @@ export default function ProfilePage() {
             ) : (
               <span className="prof-av-emoji">{av.emoji}</span>
             )}
-            {editing&&<span className="prof-av-overlay">🎨</span>}
+            {editing && <span className="prof-av-overlay">🎨</span>}
           </button>
-          <span className="prof-av-name">{av.label}</span>
+          {!customAvatarUrl && <span className="prof-av-name">{av.label}</span>}
         </div>
 
         {/* Info */}

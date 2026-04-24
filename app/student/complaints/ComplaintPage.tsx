@@ -54,7 +54,7 @@ const mockData = {
   sidebarHowItWorks: {
     title: "How it works",
     steps: [
-      "Your message is encrypted and sent directly to the BWF Warden.",
+      "Your message is sent securely and directly to the BWF Warden.",
       "The Warden will review and assign your concern to a mentor.",
       "You'll receive feedback and updates directly in this dashboard."
     ]
@@ -182,12 +182,14 @@ export default function ComplaintsPage() {
       )}
 
       {error && (
-        <div className="rc-banner rc-banner--error" onClick={() => setError(null)}>
+        <div className="rc-banner rc-banner--error">
           <div className="rc-banner-inner">
             <ShieldAlert size={18} />
             <span>{error}</span>
           </div>
-          <X size={16} />
+          <button className="rc-banner-close" onClick={() => setError(null)} aria-label="Close">
+            <X size={16} />
+          </button>
         </div>
       )}
 

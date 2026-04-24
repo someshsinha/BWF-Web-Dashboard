@@ -229,37 +229,34 @@
 
 /* Avatar → profile button */
 .sb-avatar {
-  flex: 1;
-  height: 2.5rem;
-  border-radius: 0.8rem;
-  border: 2px solid rgba(255,255,255,0.8);
+  width: 2.85rem;
+  height: 2.85rem;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  background: white;
   display: flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
-  font-size: 1.3rem;
+  font-size: 1.4rem;
   position: relative;
-  transition: all 0.25s cubic-bezier(0.34,1.56,0.64,1);
-  box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.2), 0 4px 12px rgba(0,0,0,0.15);
   overflow: hidden;
+  cursor: pointer;
+  flex-shrink: 0;
 }
 
 .sb-avatar:hover {
-  transform: scale(1.06);
-  box-shadow: 0 6px 20px rgba(0,0,0,0.14);
-}
-
-.sb-avatar-emoji {
-  position: relative;
-  z-index: 1;
-  line-height: 1;
+  transform: scale(1.1) rotate(3deg);
+  box-shadow: 0 0 0 6px rgba(255, 255, 255, 0.3), 0 8px 24px rgba(0,0,0,0.2);
 }
 
 .sb-avatar-img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  border-radius: 0.8rem;
+  border-radius: 50%;
+  padding: 2px; /* Inner spacing for border effect */
 }
 
 /* Footer blob */

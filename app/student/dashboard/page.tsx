@@ -10,6 +10,8 @@ import { getAvatar }   from "../constants/avatars";
 import api from "../../lib/api"; 
 import Image from "next/image";
 
+import { INSPIRATIONAL_QUOTES } from "../constants/quotes";
+
 const mockData = {
   studentId: "BWF-2024-001",
   defaultUrl: "https://www.borderlessworldfoundation.org/",
@@ -20,10 +22,6 @@ const mockData = {
     avatarUrl: "https://ui-avatars.com/api/?name=Dana+Elomo&background=fce7f3&color=db2777&rounded=true",
     message: "Hi Aisha! Your group presentation for the Science module was excellent yesterday. Keep up the great momentum.",
   },
-  inspirationQuotes: [
-    { quote: "You are braver than you believe, stronger than you seem, and smarter than you think.", footer: "Take a deep breath." },
-    { quote: "Believe you can and you're halfway there.", footer: "Your mindset is your greatest asset." }
-  ],
   uiStrings: {
     welcomeTitle: "Welcome back!",
     welcomeSub: "Borderless World Foundation (BWF) created a safe space for you.",
@@ -69,7 +67,9 @@ export default function Dashboard() {
   const [isLoading, setIsLoading] = useState(true);
   const [greeting, setGreeting] = useState("Welcome");
   const [reacted, setReacted] = useState(false);
-  const [quoteIndex, setQuoteIndex] = useState(0);
+  
+  // Stable quote for the day
+  const quoteIndex = new Date().getDate() % INSPIRATIONAL_QUOTES.length;
 
   const firstName = name.split(" ")[0];
 
@@ -78,10 +78,6 @@ export default function Dashboard() {
     if (h < 12) setGreeting("Good morning");
     else if (h < 18) setGreeting("Good afternoon");
     else setGreeting("Good evening");
-
-    const interval = setInterval(() => {
-      setQuoteIndex((prev) => (prev + 1) % mockData.inspirationQuotes.length);
-    }, 10000);
 
     const fetchDashboard = async () => {
       try {
@@ -123,7 +119,6 @@ export default function Dashboard() {
     };
 
     fetchDashboard();
-    return () => clearInterval(interval);
   }, []);
 
   const handleMoodClick = async (mood: string) => {
@@ -260,8 +255,8 @@ export default function Dashboard() {
 
         <div className="card mindful-card">
           <div className="mindful-header"><h3>{mockData.uiStrings.dailyInspirationTitle}</h3></div>
-          <div className="mindful-body"><p>"{mockData.inspirationQuotes[quoteIndex].quote}"</p></div>
-          <div className="mindful-footer"><p>{mockData.inspirationQuotes[quoteIndex].footer}</p></div>
+          <div className="mindful-body"><p>"{INSPIRATIONAL_QUOTES[quoteIndex].quote}"</p></div>
+          <div className="mindful-footer"><p>{INSPIRATIONAL_QUOTES[quoteIndex].footer}</p></div>
         </div>
       </section>
     </main>

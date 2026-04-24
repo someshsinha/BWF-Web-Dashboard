@@ -79,30 +79,25 @@ export default function DraggableSOS() {
   };
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      const { maxX, maxY } = getBounds();
-      setPosition({ x: maxX, y: maxY });
-      setReady(true);
-    }
+    setReady(true);
   }, []);
 
   useEffect(() => {
+    if (!hasCustomPosition) return;
+
     const handleResize = () => {
       const { maxX, maxY } = getBounds();
-      setPosition((prev) => {
-        if (!hasCustomPosition) {
-          return { x: maxX, y: maxY };
-        }
-        return {
-          x: clamp(prev.x, mockData.edgeGap, maxX),
-          y: clamp(prev.y, mockData.edgeGap, maxY),
-        };
-      });
+      setPosition((prev) => ({
+        x: clamp(prev.x, mockData.edgeGap, maxX),
+        y: clamp(prev.y, mockData.edgeGap, maxY),
+      }));
     };
 
     window.addEventListener("resize", handleResize);
+    window.addEventListener("orientationchange", handleResize);
     return () => {
       window.removeEventListener("resize", handleResize);
+      window.removeEventListener("orientationchange", handleResize);
     };
   }, [hasCustomPosition]);
 
@@ -150,11 +145,11 @@ export default function DraggableSOS() {
     <>
       <div
         className="sos-corner-shell"
-        style={ready ? { 
+        style={hasCustomPosition ? { 
           left: `${position.x}px`, 
           top: `${position.y}px`,
-          position: 'fixed',
-          zIndex: 9999 
+          right: 'auto',
+          bottom: 'auto'
         } : undefined}
       >
         <div className={`sos-tooltip${hovered && !dragging ? " sos-tooltip--visible" : ""}`}>

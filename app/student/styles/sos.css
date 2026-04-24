@@ -1,10 +1,10 @@
-/* Fix the container anchor */
 .sos-corner-shell {
   position: fixed;
-  right: 20px;  /* Anchor to right */
-  bottom: 20px; /* Anchor to bottom */
+  right: 24px;   /* Fixed anchor by default */
+  bottom: 24px;  /* Fixed anchor by default */
   z-index: 9999;
   pointer-events: none; /* Let clicks pass through the shell container */
+  touch-action: none;   /* Essential for dragging */
 }
 
 .sos-tooltip {

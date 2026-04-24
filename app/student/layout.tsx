@@ -13,8 +13,8 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
   return (
     <NoticeProvider>
       <ProfileProvider>
+        <DraggableSOS />
         <div className="student-shell">
-          <DraggableSOS />
           <StudentSidebar />
           <div className="student-page-area">
             {children}
