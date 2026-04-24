@@ -36,7 +36,7 @@ export default function StudentSidebar() {
   const [isMobileOpen, setIsMobileOpen] = useState(false); // Mobile state
   
   const { unreadCount } = useNotices();
-  const { avatarId } = useProfile();
+  const { avatarId, customAvatarUrl } = useProfile();
   const av = getAvatar(avatarId);
   const hasUnread = unreadCount > 0;
 
@@ -85,7 +85,11 @@ export default function StudentSidebar() {
           aria-label="Go to profile"
           type="button"
         >
-          <span>{av.emoji}</span>
+          {customAvatarUrl ? (
+            <Image src={customAvatarUrl} alt="Profile photo" width={26} height={26} className="mobile-avatar-img" />
+          ) : (
+            <span>{av.emoji}</span>
+          )}
         </button>
       </div>
 
@@ -157,7 +161,11 @@ export default function StudentSidebar() {
             title="My Profile"
             type="button"
           >
-            <span>{av.emoji}</span>
+            {customAvatarUrl ? (
+              <Image src={customAvatarUrl} alt="Profile photo" width={40} height={40} className="sb-avatar-img" />
+            ) : (
+              <span>{av.emoji}</span>
+            )}
           </button>
         </div>
 

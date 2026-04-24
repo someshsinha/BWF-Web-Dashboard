@@ -11,6 +11,7 @@ import {
   ResponsiveContainer, AreaChart, Area,
   XAxis, YAxis, Tooltip, CartesianGrid
 } from "recharts";
+import Image from "next/image";
 
 // ─────────────────────────────────────────
 // TYPES
@@ -86,7 +87,7 @@ type Tab = "daily"|"timeline"|"yearly";
 // MAIN COMPONENT
 // ─────────────────────────────────────────
 export default function AcademicJourney() {
-  const { name, avatarId } = useProfile();
+  const { name, avatarId, customAvatarUrl } = useProfile();
   const av = getAvatar(avatarId);
   const firstName = name.split(" ")[0];
 
@@ -213,7 +214,11 @@ export default function AcademicJourney() {
           <h1 className="ac-title">Track Your Progress</h1>
         </div>
         <div className="ac-avatar-pill" style={{background:av.bg}}>
-          <span>{av.emoji}</span>
+          {customAvatarUrl ? (
+            <Image src={customAvatarUrl} alt="Profile photo" width={24} height={24} className="ac-avatar-img" />
+          ) : (
+            <span>{av.emoji}</span>
+          )}
           <span className="ac-avatar-name">{firstName}</span>
         </div>
       </header>

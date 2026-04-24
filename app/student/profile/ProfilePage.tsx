@@ -2,10 +2,11 @@
 // app/student/profile/ProfilePage.tsx
 import { useState } from "react";
 import "../styles/profile.css";
-import { Edit2, Save, Star, BookOpen, Sparkles } from "lucide-react";
+import { Edit2, Save, Star, BookOpen, Sparkles, Upload, Trash2 } from "lucide-react";
 import { useProfile } from "../context/ProfileContext";
 import { AVATARS, AVATAR_CATEGORIES, getAvatar } from "../constants/avatars";
 import DiaryEntry from "../components/DiaryEntry";
+import Image from "next/image";
 
 const INTEREST_EMOJIS: Record<string,string> = {
   Drawing:"🎨", Science:"🔬", Music:"🎵", Reading:"📚",
@@ -19,7 +20,7 @@ interface Profile {
 }
 
 export default function ProfilePage() {
-  const { avatarId, setAvatarId, setName: setCtxName } = useProfile();
+  const { avatarId, customAvatarUrl, setAvatarId, setCustomAvatarUrl, setName: setCtxName } = useProfile();
   const av = getAvatar(avatarId);
 
   const [editing, setEditing]       = useState(false);
@@ -48,6 +49,19 @@ export default function ProfilePage() {
   };
 
   const catAvatars = AVATARS.filter(a => a.category === activeCategory);
+
+  const handleCustomAvatarUpload = (file: File | null) => {
+    if (!file) return;
+    if (!file.type.startsWith("image/")) return;
+    if (file.size > 3 * 1024 * 1024) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = typeof reader.result === "string" ? reader.result : null;
+      setCustomAvatarUrl(result);
+      setPickerOpen(false);
+    };
+    reader.readAsDataURL(file);
+  };
 
   return (
     <div className="prof-page">
@@ -81,7 +95,11 @@ export default function ProfilePage() {
             onClick={()=>editing&&setPickerOpen(o=>!o)}
             title={editing?"Tap to change avatar":av.label}
           >
-            <span className="prof-av-emoji">{av.emoji}</span>
+            {customAvatarUrl ? (
+              <Image src={customAvatarUrl} alt="Custom profile photo" fill sizes="96px" className="prof-av-image" />
+            ) : (
+              <span className="prof-av-emoji">{av.emoji}</span>
+            )}
             {editing&&<span className="prof-av-overlay">🎨</span>}
           </button>
           <span className="prof-av-name">{av.label}</span>
@@ -133,6 +151,24 @@ export default function ProfilePage() {
             <button className="prof-picker-close" onClick={()=>setPickerOpen(false)}>✕</button>
           </div>
 
+          <div className="prof-custom-upload-row">
+            <label className="prof-custom-upload-btn">
+              <Upload size={14} />
+              Upload my photo
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) => handleCustomAvatarUpload(e.target.files?.[0] ?? null)}
+              />
+            </label>
+            {customAvatarUrl && (
+              <button className="prof-custom-remove-btn" onClick={() => setCustomAvatarUrl(null)}>
+                <Trash2 size={14} />
+                Remove photo
+              </button>
+            )}
+          </div>
+
           {/* Category tabs */}
           <div className="prof-picker-tabs">
             {AVATAR_CATEGORIES.map(cat=>(
@@ -151,7 +187,11 @@ export default function ProfilePage() {
                 key={a.id}
                 className={`prof-picker-item${avatarId===a.id?" selected":""}`}
                 style={{background:a.bg}}
-                onClick={()=>{setAvatarId(a.id);setPickerOpen(false);}}
+                onClick={()=>{
+                  setAvatarId(a.id);
+                  setCustomAvatarUrl(null);
+                  setPickerOpen(false);
+                }}
                 title={a.label}
               >
                 <span className="picker-emoji">{a.emoji}</span>

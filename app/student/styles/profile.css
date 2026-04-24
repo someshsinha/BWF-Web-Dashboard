@@ -60,6 +60,11 @@
 
 .prof-av-emoji { font-size:2.8rem; line-height:1; position:relative; z-index:1; }
 
+.prof-av-image {
+  object-fit: cover;
+  border-radius: 50%;
+}
+
 .prof-av-overlay {
   position:absolute; inset:0; border-radius:50%;
   background:rgba(0,0,0,0.42); backdrop-filter:blur(2px);
@@ -144,6 +149,39 @@
 .prof-picker-sub   { font-size:0.8rem; font-weight:600; color:var(--text-secondary); }
 .prof-picker-close { background:none; border:none; font-size:1rem; cursor:pointer; color:var(--text-secondary); padding:4px 8px; border-radius:8px; transition:background 0.2s; }
 .prof-picker-close:hover { background:#f1f5f9; }
+
+.prof-custom-upload-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.prof-custom-upload-btn,
+.prof-custom-remove-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 999px;
+  border: 1.5px solid #dbeafe;
+  background: #eff6ff;
+  color: #1d4ed8;
+  font-size: 0.75rem;
+  font-weight: 800;
+  padding: 6px 12px;
+  cursor: pointer;
+  font-family: 'Nunito', sans-serif;
+}
+
+.prof-custom-upload-btn input {
+  display: none;
+}
+
+.prof-custom-remove-btn {
+  border-color: #fecaca;
+  background: #fef2f2;
+  color: #dc2626;
+}
 
 /* Category tabs */
 .prof-picker-tabs { display:flex; gap:6px; margin-bottom:16px; flex-wrap:wrap; }

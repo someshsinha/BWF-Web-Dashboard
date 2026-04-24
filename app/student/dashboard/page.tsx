@@ -8,6 +8,7 @@ import { useNotices }  from "../context/NoticeContext";
 import { useProfile }  from "../context/ProfileContext";
 import { getAvatar }   from "../constants/avatars";
 import api from "../../lib/api"; 
+import Image from "next/image";
 
 const STUDENT_ID = "BWF-2024-001";
 const DEFAULT_URL = "https://www.borderlessworldfoundation.org/";
@@ -27,7 +28,7 @@ const INSPIRATION_QUOTES = [
 export default function Dashboard() {
   const router = useRouter();
   const { unreadCount } = useNotices();
-  const { avatarId, name } = useProfile();
+  const { avatarId, customAvatarUrl, name } = useProfile();
   const av = getAvatar(avatarId);
   const hasUnread = unreadCount > 0;
 
@@ -126,7 +127,11 @@ export default function Dashboard() {
             {hasUnread && <span className="dash-bell-badge">{unreadCount}</span>}
           </button>
           <button className="dash-avatar-btn" style={{ background: av.bg }} onClick={() => router.push("/student/profile")}>
-            <span>{av.emoji}</span>
+            {customAvatarUrl ? (
+              <Image src={customAvatarUrl} alt="Profile photo" width={42} height={42} className="dash-avatar-img" />
+            ) : (
+              <span>{av.emoji}</span>
+            )}
           </button>
         </div>
       </header>

@@ -118,6 +118,13 @@
   box-shadow: 0 10px 28px rgba(15, 23, 42, 0.14), 0 0 0 1.5px #bfdbfe;
 }
 
+.dash-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
 /* --- 3. WELCOME BANNER & MOOD TRACKER --- */
 .welcome-banner {
   background: linear-gradient(118deg, #e0f2fe 0%, #dbeafe 30%, #ede9fe 60%, #fce7f3 100%);

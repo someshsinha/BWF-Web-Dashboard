@@ -5,6 +5,7 @@ import "../styles/community.css";
 import { useProfile } from "../context/ProfileContext";
 import { getAvatar } from "../constants/avatars";
 import { Heart, Send, Sparkles, CheckCircle2, ImagePlus, ShieldCheck } from "lucide-react";
+import Image from "next/image";
 
 // ── Types ──
 type Category = "Win" | "Story" | "Gratitude" | "Highlight";
@@ -91,7 +92,7 @@ function timeAgo(iso: string) {
 }
 
 export default function CommunityPage() {
-  const { name, avatarId } = useProfile();
+  const { name, avatarId, customAvatarUrl } = useProfile();
   const av = getAvatar(avatarId as string);
   const firstName = name.split(" ")[0];
 
@@ -272,7 +273,13 @@ export default function CommunityPage() {
             ) : (
               <>
                 <div className="cm-submit-author">
-                  <div className="cm-submit-av" style={{ background: av.bg }}>{av.emoji}</div>
+                  <div className="cm-submit-av" style={{ background: av.bg }}>
+                    {customAvatarUrl ? (
+                      <Image src={customAvatarUrl} alt="Profile photo" width={30} height={30} className="cm-submit-av-img" />
+                    ) : (
+                      av.emoji
+                    )}
+                  </div>
                   <span className="cm-submit-name">{firstName}</span>
                 </div>
                 <select
