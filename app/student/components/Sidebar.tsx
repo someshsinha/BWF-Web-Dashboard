@@ -14,6 +14,7 @@ import {
   X, 
   Users,   
   MessageSquareWarning,
+  LogOut,
 } from "lucide-react";
 import { useNotices } from "../context/NoticeContext";
 import { useProfile } from "../context/ProfileContext";
@@ -64,6 +65,12 @@ export default function StudentSidebar() {
   const handleNavClick = () => {
     // Small delay to ensure smooth transition
     setTimeout(() => closeMobile(), 100);
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("role");
+    router.push("/auth/login");
   };
 
   return (
@@ -166,6 +173,16 @@ export default function StudentSidebar() {
             ) : (
               <span>{av.emoji}</span>
             )}
+          </button>
+
+          <button
+            className="sb-bell"
+            style={{ color: "#ef4444" }}
+            onClick={handleLogout}
+            title="Log Out"
+            type="button"
+          >
+            <LogOut size={17} />
           </button>
         </div>
 
