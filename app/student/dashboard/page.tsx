@@ -13,15 +13,6 @@ import Image from "next/image";
 import { INSPIRATIONAL_QUOTES } from "../constants/quotes";
 
 const mockData = {
-  studentId: "BWF-2024-001",
-  defaultUrl: "https://www.borderlessworldfoundation.org/",
-  mentorFallback: {
-    name: "Ms. Dana",
-    role: "Your Mentor",
-    dateLabel: "Today",
-    avatarUrl: "https://ui-avatars.com/api/?name=Dana+Elomo&background=fce7f3&color=db2777&rounded=true",
-    message: "Hi Aisha! Your group presentation for the Science module was excellent yesterday. Keep up the great momentum.",
-  },
   uiStrings: {
     welcomeTitle: "Welcome back!",
     welcomeSub: "Borderless World Foundation (BWF) created a safe space for you.",
@@ -58,11 +49,11 @@ export default function Dashboard() {
   const [todayMood, setTodayMood] = useState<string | null>(null);
   
   // NEW: Dynamic Resources State
-  const [resources, setResources] = useState({
-    library: mockData.defaultUrl,
-    syllabus: mockData.defaultUrl,
-    contactMentor: mockData.defaultUrl
-  });
+  const [resources, setResources] = useState<{
+    library?: string;
+    syllabus?: string;
+    contactMentor?: string;
+  }>({});
 
   const [isLoading, setIsLoading] = useState(true);
   const [greeting, setGreeting] = useState("Welcome");
@@ -110,9 +101,9 @@ export default function Dashboard() {
         // Map dynamic resources from backend if they exist
         if (res.data.resources) {
           setResources({
-            library: res.data.resources.library || mockData.defaultUrl,
-            syllabus: res.data.resources.syllabus || mockData.defaultUrl,
-            contactMentor: res.data.resources.contactMentor || mockData.defaultUrl
+            library: res.data.resources.library,
+            syllabus: res.data.resources.syllabus,
+            contactMentor: res.data.resources.contactMentor
           });
         }
       } catch (error) {
@@ -225,37 +216,39 @@ export default function Dashboard() {
         <div className="card resources-card">
           <h3>{mockData.uiStrings.resourcesTitle}</h3>
           <div className="resource-buttons">
-            <button className="resource-btn bg-library" onClick={() => openLink(resources.library)}>{mockData.uiStrings.resourceLibrary}</button>
-            <button className="resource-btn bg-syllabus" onClick={() => openLink(resources.syllabus)}>{mockData.uiStrings.resourceSyllabus}</button>
-            <button className="resource-btn bg-mentor" onClick={() => openLink(resources.contactMentor)}>{mockData.uiStrings.resourceContact}</button>
+            <button className="resource-btn bg-library" disabled={!resources.library || resources.library === "#"} onClick={() => resources.library && resources.library !== "#" && openLink(resources.library)}>{mockData.uiStrings.resourceLibrary}</button>
+            <button className="resource-btn bg-syllabus" disabled={!resources.syllabus || resources.syllabus === "#"} onClick={() => resources.syllabus && resources.syllabus !== "#" && openLink(resources.syllabus)}>{mockData.uiStrings.resourceSyllabus}</button>
+            <button className="resource-btn bg-mentor" disabled={!resources.contactMentor || resources.contactMentor === "#"} onClick={() => resources.contactMentor && resources.contactMentor !== "#" && openLink(resources.contactMentor)}>{mockData.uiStrings.resourceContact}</button>
           </div>
         </div>
       </section>
 
       {/* BOTTOM SECTION */}
       <section className="connection-section mt-8">
-        <div className="card mentor-note-card">
-          <div className="card-header">
-            <div className="mentor-info">
-              <div className="mentor-avatar">
-                <img src={mockData.mentorFallback.avatarUrl} alt="Mentor" />
-              </div>
-              <div>
-                <h3>{mockData.uiStrings.mentorNoteTitle}{mentorNote?.mentorName || mockData.mentorFallback.name}</h3>
-                <span className="mentor-role-label">{mockData.mentorFallback.role}</span>
+        {mentorNote && (
+          <div className="card mentor-note-card">
+            <div className="card-header">
+              <div className="mentor-info">
+                <div className="mentor-avatar">
+                  <img src={mentorNote.avatarUrl} alt="Mentor" />
+                </div>
+                <div>
+                  <h3>{mockData.uiStrings.mentorNoteTitle}{mentorNote.mentorName}</h3>
+                  <span className="mentor-role-label">{mentorNote.role}</span>
+                </div>
               </div>
             </div>
+            <div className="mentor-message">
+              <p>"{mentorNote.message}"</p>
+            </div>
+            <div className="mentor-actions">
+              <button className={`btn-react${reacted ? " btn-react--active" : ""}`} onClick={handleThanksClick} disabled={reacted}>
+                {reacted ? "❤️" : "🤍"}
+              </button>
+              <button className="btn-reply" onClick={handleThanksClick}>{reacted ? mockData.uiStrings.thanked : mockData.uiStrings.sayThanks}</button>
+            </div>
           </div>
-          <div className="mentor-message">
-            <p>"{mentorNote?.message || mockData.mentorFallback.message}"</p>
-          </div>
-          <div className="mentor-actions">
-            <button className={`btn-react${reacted ? " btn-react--active" : ""}`} onClick={handleThanksClick} disabled={reacted}>
-              {reacted ? "❤️" : "🤍"}
-            </button>
-            <button className="btn-reply" onClick={handleThanksClick}>{reacted ? mockData.uiStrings.thanked : mockData.uiStrings.sayThanks}</button>
-          </div>
-        </div>
+        )}
 
         <div className="card mindful-card">
           <div className="mindful-header"><h3>{mockData.uiStrings.dailyInspirationTitle}</h3></div>
