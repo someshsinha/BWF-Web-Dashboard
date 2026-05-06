@@ -1,14 +1,6 @@
-"use client";
 // app/student/dashboard/page.tsx
-import React, { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import "../styles/dashboard.css";
-import { Bell } from "lucide-react";
-import { useNotices }  from "../context/NoticeContext";
-import { useProfile }  from "../context/ProfileContext";
-import { getAvatar }   from "../constants/avatars";
-import api from "../../lib/api"; 
-import Image from "next/image";
+import Dashboard from "./Dashboard";
+import type { Metadata } from "next";
 
 import { INSPIRATIONAL_QUOTES } from "../constants/quotes";
 
